@@ -24,7 +24,7 @@ export function AssistantChat({
     {
       id: "initial-welcome",
       sender: "assistant",
-      text: "CityTwin AI Planning Assistant is online. You can type natural language instructions or click any prompt template to test city decisions.",
+      text: "TrafficTwin planning assistant is ready. Enter a planning request or choose a prompt template.",
       briefing: null
     }
   ]);
@@ -107,7 +107,7 @@ export function AssistantChat({
               ) : (
                 <>
                   <Bot size={12} style={{ color: '#00f2fe' }} />
-                  <span>CityTwin Intelligence</span>
+                  <span>TrafficTwin Intelligence</span>
                 </>
               )}
             </div>

@@ -5,6 +5,14 @@ import { BENGALURU_EDGES } from '../data/bengaluruRoadGraph.js';
 import { getIncidentEdgeIds } from '../simulation/graphEngine.js';
 import { createBaselineRouteGeoJSON, createPlanRouteCollections } from '../simulation/routeGeoJSON.js';
 
+function getOrientedEdgeCoordinates(route) {
+  return route.edges.map((edge, index) => (
+    edge.from === route.path[index] && edge.to === route.path[index + 1]
+      ? edge.coordinates
+      : [...edge.coordinates].reverse()
+  ));
+}
+
 describe('Simulation Strategies & Scenario Calculations Tests', () => {
   const baseOptions = {
     startNodeId: 'n_kumble_circle',
@@ -139,11 +147,11 @@ describe('Simulation Strategies & Scenario Calculations Tests', () => {
 
   it('should select a different congestion-aware route when hourly demand changes', () => {
     const early = runCityTwinSimulation({
-      closedEdgeId: 'edge_cubbon_west', durationHours: 6, demandLevel: 'high',
+      closedEdgeId: 'edge_cubbon_west', durationHours: 6, demandLevel: 'medium',
       selectedStrategy: 'plan_b', timelineHour: 0
     });
     const peak = runCityTwinSimulation({
-      closedEdgeId: 'edge_cubbon_west', durationHours: 6, demandLevel: 'high',
+      closedEdgeId: 'edge_cubbon_west', durationHours: 6, demandLevel: 'medium',
       selectedStrategy: 'plan_b', timelineHour: 3
     });
 
@@ -162,11 +170,12 @@ describe('Simulation Strategies & Scenario Calculations Tests', () => {
       const plan = result.strategyComparison[strategyId];
       expect(plan.route.edges.some((edge) => edge.id === 'edge_mg_central')).toBe(false);
       const collections = createPlanRouteCollections(result.strategyComparison, strategyId, 'edge_mg_central', true);
-      expect(collections.selected.features[0].geometry.coordinates).toEqual(plan.route.coordinates);
+      expect(collections.selected.features[0].geometry.type).toBe('MultiLineString');
+      expect(collections.selected.features[0].geometry.coordinates).toEqual(getOrientedEdgeCoordinates(plan.route));
       expect(collections.alternatives.features).toHaveLength(2);
       for (const alternative of collections.alternatives.features) {
         expect(alternative.geometry.coordinates).toEqual(
-          result.strategyComparison[alternative.properties.strategy].route.coordinates
+          getOrientedEdgeCoordinates(result.strategyComparison[alternative.properties.strategy].route)
         );
       }
     }
@@ -205,6 +214,11 @@ describe('Simulation Strategies & Scenario Calculations Tests', () => {
   });
 
   it('should calculate the selected graph origin and destination instead of fixed demo points', () => {
+    const demoResult = runCityTwinSimulation({
+      closedEdgeId: 'edge_mg_central', closureTargetType: 'road',
+      originNodeId: 'n_kumble_circle', destinationNodeId: 'n_trinity_circle',
+      timelineHour: 3, durationHours: 6, demandLevel: 'medium', selectedStrategy: 'plan_b'
+    });
     const result = runCityTwinSimulation({
       closedEdgeId: 'edge_mg_central', closureTargetType: 'road',
       originNodeId: 'n_richmond_circle', destinationNodeId: 'n_commercial_street',
@@ -217,5 +231,16 @@ describe('Simulation Strategies & Scenario Calculations Tests', () => {
     expect(result.simulated.route.path.at(-1)).toBe('n_commercial_street');
     expect(result.scenario.origin).toContain('Richmond');
     expect(result.scenario.destination).toContain('Commercial');
+
+    const displayedRoute = createPlanRouteCollections(
+      result.strategyComparison,
+      'plan_b',
+      result.scenario.closedEdgeIds,
+      result.scenario.closureActive
+    ).selected.features[0];
+    expect(result.simulated.route.coordinates).not.toEqual(demoResult.simulated.route.coordinates);
+    expect(displayedRoute.geometry.type).toBe('MultiLineString');
+    expect(displayedRoute.geometry.coordinates).toEqual(getOrientedEdgeCoordinates(result.simulated.route));
+    expect(displayedRoute.geometry.coordinates).not.toEqual(getOrientedEdgeCoordinates(demoResult.simulated.route));
   });
 });

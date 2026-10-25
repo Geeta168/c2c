@@ -2,13 +2,15 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
-  Compass,
   RotateCcw,
   AlertTriangle,
   Building2,
-  Navigation,
   ShieldAlert,
-  Layers
+  Layers,
+  MapPin,
+  Flag,
+  Ban,
+  GitFork
 } from 'lucide-react';
 import { MAP_CONFIG } from '../config/mapConfig';
 import { BENGALURU_EDGES, BENGALURU_NODES, getEdgeById } from '../data/bengaluruRoadGraph';
@@ -23,7 +25,8 @@ export function MapView({
   onSelectRoad,
   onSelectFacility,
   mapSelectionMode,
-  onSelectMapPoint
+  onSelectMapPoint,
+  onSelectMapMode
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -39,18 +42,10 @@ export function MapView({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
   const [currentPitch, setCurrentPitch] = useState(MAP_CONFIG.pitch);
-  const [activeCameraPreset, setActiveCameraPreset] = useState("mgRoad");
   const selectedStrategyId = simulationResults?.scenario?.selectedStrategy ||
     scenarioParams.selectedStrategy || simulationResults?.simulated?.activeStrategy || 'plan_b';
-  const selectedPlanLabel = { plan_a: 'Plan A', plan_b: 'Plan B', plan_c: 'Plan C' }[selectedStrategyId] || 'Selected plan';
-  const activeRouteResult = simulationResults?.strategyComparison?.[selectedStrategyId];
-  const activeRoute = activeRouteResult?.route;
   const closureActive = simulationResults?.scenario?.closureActive ?? true;
   const closedEdgeIds = new Set(simulationResults?.scenario?.closedEdgeIds || [scenarioParams.closedEdgeId]);
-  const routeUnavailable = !activeRoute?.coordinates || activeRoute.coordinates.length < 2 ||
-    (closureActive && activeRoute.edges?.some((edge) => closedEdgeIds.has(edge.id)));
-  const baselineRouteUnavailable = !simulationResults?.baseline?.route ||
-    (closureActive && simulationResults.baseline.route.edges.some((edge) => closedEdgeIds.has(edge.id)));
 
   // 1. Format GeoJSON for Base Network Road Corridors
   const createEdgesGeoJSON = useCallback(() => {
@@ -543,7 +538,7 @@ export function MapView({
           .setHTML(`
             <div class="popup-title">${props.name}</div>
             <div class="popup-badge" style="background:${props.isClosed ? 'rgba(255,59,87,0.2)' : 'rgba(56,189,248,0.2)'}; color:${props.isClosed ? '#ff3b57' : '#38bdf8'}">
-              ${props.isClosed ? 'CLOSED CITYTWIN EDGE' : 'CITYTWIN GRAPH ROAD · SIMULATED FLOW'}
+              ${props.isClosed ? 'CLOSED TRAFFIC TWIN EDGE' : 'TRAFFIC TWIN ROAD GRAPH · TRAFFIC ESTIMATE'}
             </div>
             <div class="popup-desc">${props.description || ''}</div>
             <div class="popup-stats">
@@ -582,7 +577,7 @@ export function MapView({
       }
       new maplibregl.Popup({ offset: 12 })
         .setLngLat(event.lngLat)
-        .setHTML(`<div class="popup-title">${node.name}</div><div class="popup-badge">SIMULATED GRAPH INTERSECTION</div><div class="popup-desc">This selectable junction belongs to the CityTwin road graph; basemap geometry remains unchanged.</div>`)
+        .setHTML(`<div class="popup-title">${node.name}</div><div class="popup-badge">TRAFFIC TWIN GRAPH INTERSECTION</div><div class="popup-desc">This selectable junction belongs to the TrafficTwin road graph; basemap geometry remains unchanged.</div>`)
         .addTo(map);
     });
 
@@ -842,28 +837,6 @@ export function MapView({
     });
   }, [layerToggles, mapLoaded]);
 
-  const activeRouteDistance = activeRouteResult?.distanceKm ?? activeRoute?.distanceKm;
-  const activeRouteTime = activeRouteResult?.simulatedTravelTime ?? simulationResults?.simulated?.travelTimeMinutes;
-  const baselineDistance = simulationResults?.baseline?.distanceKm;
-  const baselineTime = simulationResults?.baseline?.travelTimeMinutes;
-
-  // Camera Presets Navigation
-  const handleApplyCameraPreset = (presetKey) => {
-    if (!mapRef.current) return;
-    const preset = MAP_CONFIG.cameraPresets[presetKey];
-    if (preset) {
-      setActiveCameraPreset(presetKey);
-      mapRef.current.flyTo({
-        center: preset.center,
-        zoom: preset.zoom,
-        pitch: preset.pitch,
-        bearing: preset.bearing,
-        essential: true,
-        duration: 1600
-      });
-    }
-  };
-
   // Quick 3D Tilt Toggle (0° vs 60°)
   const handleTogglePitch3D = () => {
     if (!mapRef.current) return;
@@ -884,7 +857,6 @@ export function MapView({
       bearing: MAP_CONFIG.bearing,
       duration: 1400
     });
-    setActiveCameraPreset("mgRoad");
   };
 
   return (
@@ -944,40 +916,46 @@ export function MapView({
 
       {/* Floating Camera Presets Bar */}
       <div className="map-floating-overlay">
-        <div className="map-view-preset-label">Camera views · view only</div>
-        <div className="camera-presets-card">
+        <div className="map-pick-controls" role="group" aria-label="Choose a TrafficTwin map selection">
           <button
-            className={`camera-preset-btn ${activeCameraPreset === 'mgRoad' ? 'active' : ''}`}
-            onClick={() => handleApplyCameraPreset('mgRoad')}
-          >
-            <Navigation size={13} />
-            <span>MG Road Central</span>
-          </button>
+            type="button"
+            className={`map-pick-control ${mapSelectionMode === 'origin' ? 'active' : ''}`}
+            aria-pressed={mapSelectionMode === 'origin'}
+            aria-label="Choose route start point"
+            title="Choose route start point"
+            onClick={() => onSelectMapMode('origin')}
+          ><MapPin size={17} aria-hidden="true" /></button>
           <button
-            className={`camera-preset-btn ${activeCameraPreset === 'hospitalCorridor' ? 'active' : ''}`}
-            onClick={() => handleApplyCameraPreset('hospitalCorridor')}
-          >
-            <span>🏥 Bowring Hospital</span>
-          </button>
+            type="button"
+            className={`map-pick-control ${mapSelectionMode === 'destination' ? 'active' : ''}`}
+            aria-pressed={mapSelectionMode === 'destination'}
+            aria-label="Choose route end point"
+            title="Choose route end point"
+            onClick={() => onSelectMapMode('destination')}
+          ><Flag size={17} aria-hidden="true" /></button>
           <button
-            className={`camera-preset-btn ${activeCameraPreset === 'residencyBrigade' ? 'active' : ''}`}
-            onClick={() => handleApplyCameraPreset('residencyBrigade')}
-          >
-            <span>Brigade & Residency</span>
-          </button>
+            type="button"
+            className={`map-pick-control ${mapSelectionMode === 'closure-road' ? 'active' : ''}`}
+            aria-pressed={mapSelectionMode === 'closure-road'}
+            aria-label="Choose road to close"
+            title="Choose road to close"
+            onClick={() => onSelectMapMode('closure-road')}
+          ><Ban size={17} aria-hidden="true" /></button>
           <button
-            className={`camera-preset-btn ${activeCameraPreset === 'birdseyeOverview' ? 'active' : ''}`}
-            onClick={() => handleApplyCameraPreset('birdseyeOverview')}
-          >
-            <span>Overview</span>
-          </button>
+            type="button"
+            className={`map-pick-control ${mapSelectionMode === 'closure-intersection' ? 'active' : ''}`}
+            aria-pressed={mapSelectionMode === 'closure-intersection'}
+            aria-label="Choose junction to close"
+            title="Choose junction to close"
+            onClick={() => onSelectMapMode('closure-intersection')}
+          ><GitFork size={17} aria-hidden="true" /></button>
         </div>
         {mapSelectionMode && (
           <div className="map-selection-hint">
-            {mapSelectionMode === 'origin' ? 'Choose a CityTwin intersection for the route origin.'
-              : mapSelectionMode === 'destination' ? 'Choose a CityTwin intersection for the destination.'
-                : mapSelectionMode === 'closure-intersection' ? 'Choose a CityTwin intersection to close its connected roads.'
-                  : 'Choose a CityTwin road segment to close.'}
+            {mapSelectionMode === 'origin' ? 'Choose a TrafficTwin intersection for the route origin.'
+              : mapSelectionMode === 'destination' ? 'Choose a TrafficTwin intersection for the destination.'
+                : mapSelectionMode === 'closure-intersection' ? 'Choose a TrafficTwin intersection to close its connected roads.'
+                  : 'Choose a TrafficTwin road segment to close.'}
           </div>
         )}
       </div>
@@ -1004,7 +982,7 @@ export function MapView({
       {/* Map Legend */}
       <div className="map-legend-card">
         <div className="legend-title">
-          <span>Simulation Visual Hierarchy</span>
+          <span>Map Key</span>
           <span style={{ color: '#00f2fe' }}>{currentPitch}° 3D Perspective</span>
         </div>
         <div className="legend-items-grid">
@@ -1014,15 +992,7 @@ export function MapView({
           </div>
           <div className="legend-item">
             <div className="legend-color-line" style={{ background: '#10b981', height: '5px' }} />
-            <span style={{ color: '#10b981', fontWeight: 600 }}>Selected Plan Route</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color-line" style={{ background: '#94a3b8', height: '3px', borderTop: '1px dashed #cbd5e1' }} />
-            <span>Other valid plans (dashed)</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color-line" style={{ background: '#f8fafc', height: '3px', borderTop: '1px dashed #f8fafc' }} />
-            <span>Baseline route (dashed)</span>
+            <span style={{ color: '#10b981', fontWeight: 600 }}>Active route</span>
           </div>
           <div className="legend-item">
             <div className="legend-color-line" style={{ background: '#f43f5e', border: '1px dashed #ffffff', height: '4px' }} />
@@ -1038,24 +1008,8 @@ export function MapView({
           </div>
           <div className="legend-item">
             <div className="legend-dot" style={{ background: '#fbbf24', border: '1px solid #f8fafc' }} />
-            <span>CityTwin graph intersections</span>
+            <span>TrafficTwin graph intersections</span>
           </div>
-        </div>
-        <div className="map-data-note">Basemap and buildings are physical map layers. Roads, junction points, closures, traffic, and routes are synthetic CityTwin graph overlays.</div>
-        <div className="map-route-summary" aria-live="polite">
-          {routeUnavailable ? (
-            <strong>No valid {selectedPlanLabel} route for this closure.</strong>
-          ) : (
-            <>
-              <strong>{selectedPlanLabel} route</strong>
-              <span>{simulationResults?.scenario?.origin} to {simulationResults?.scenario?.destination}</span>
-              <span>{activeRouteDistance} km · {activeRouteTime} min estimated</span>
-            </>
-          )}
-          <span>
-            Baseline (no closure): {baselineDistance} km · {baselineTime} min
-            {baselineRouteUnavailable ? ' · route uses closed road; geometry hidden' : ''}
-          </span>
         </div>
       </div>
     </div>

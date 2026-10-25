@@ -204,11 +204,6 @@ function calculateHour(params, hour) {
     closedNodeId,
     closureTargetType,
     closedTargetName,
-    closedEdgeIds: [...closureEdgeIds],
-    closedNodeId,
-    closedTargetName: closedNodeId
-      ? `${BENGALURU_NODES[closedNodeId]?.name || closedNodeId} intersection`
-      : closedEdge.name,
     affectedVehiclesThisHour,
     baseline: {
       travelTimeMinutes: baselineTravelTime ?? 0,

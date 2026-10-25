@@ -31,6 +31,6 @@ describe('AI Planning Assistant Natural Language Parser Tests', () => {
     expect(response.briefing.title).toContain('MG Road Central');
     expect(response.briefing.keyFindings.length).toBeGreaterThan(2);
     expect(response.briefing.mitigations.length).toBeGreaterThan(0);
-    expect(response.briefing.syntheticDisclaimer).toContain('Synthetic simulated estimates');
+    expect(response.briefing.syntheticDisclaimer).toContain('Synthetic estimates');
   });
 });

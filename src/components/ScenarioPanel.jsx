@@ -40,6 +40,15 @@ export function ScenarioPanel({
   const junctionNodes = graphNodes.filter((node) => node.type === 'junction');
   const hospitalNodes = graphNodes.filter((node) => node.type?.includes('hospital'));
   const isRoadClosure = scenarioParams.closureTargetType !== 'intersection';
+  const activeStrategyId = simulationResults?.scenario?.selectedStrategy || scenarioParams.selectedStrategy;
+  const activePlan = simulationResults?.strategyComparison?.[activeStrategyId];
+  const activeRoute = activePlan?.route;
+  const activeClosedEdgeIds = new Set(simulationResults?.scenario?.closedEdgeIds || []);
+  const routeUnavailable = !activeRoute?.edges || activeRoute.coordinates?.length < 2 ||
+    (simulationResults?.scenario?.closureActive && activeRoute.edges.some((edge) => activeClosedEdgeIds.has(edge.id)));
+  const baselineRouteUnavailable = simulationResults?.baseline?.route?.edges?.some((edge) =>
+    simulationResults?.scenario?.closureActive && activeClosedEdgeIds.has(edge.id)
+  );
 
   return (
     <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -123,7 +132,23 @@ export function ScenarioPanel({
         <select className="form-select" value={scenarioParams.hospitalNodeId} onChange={(e) => onUpdateScenario({ hospitalNodeId: e.target.value })}>
           {hospitalNodes.map((node) => <option key={node.id} value={node.id}>{node.name}</option>)}
         </select>
-        <div className="synthetic-data-note">Selectable points use the simulated CityTwin road graph, not live map routing.</div>
+        <div className="synthetic-data-note">Selectable points use the TrafficTwin road graph, not live map routing.</div>
+      </div>
+
+      <div className="scenario-route-summary" aria-live="polite">
+        <strong>{activeStrategyId?.replace('plan_', 'Plan ').toUpperCase()} route</strong>
+        {routeUnavailable ? (
+          <span>No valid route for the selected points and closure.</span>
+        ) : (
+          <>
+            <span>{simulationResults?.scenario?.origin} to {simulationResults?.scenario?.destination}</span>
+            <span>{activePlan.distanceKm} km · {activePlan.simulatedTravelTime} min estimated</span>
+          </>
+        )}
+        <span>
+          Baseline (no closure): {simulationResults?.baseline?.distanceKm} km · {simulationResults?.baseline?.travelTimeMinutes} min
+          {baselineRouteUnavailable ? ' · crosses a closed road' : ''}
+        </span>
       </div>
 
       {/* 3. Closure Duration */}
@@ -201,7 +226,7 @@ export function ScenarioPanel({
         />
       </div>
 
-      {/* Simulation Trigger Button */}
+      {/* Recalculate Button */}
       <button
         className="btn-primary"
         style={{ width: '100%', justifyContent: 'center', padding: '11px', marginTop: '4px' }}
@@ -209,7 +234,7 @@ export function ScenarioPanel({
         disabled={isSimulating}
       >
         <Play size={15} fill="#030a1c" />
-        <span>{isSimulating ? "Calculating Graph & Delays..." : "Recalculate Decision Simulation"}</span>
+        <span>{isSimulating ? "Calculating routes & delays..." : "Recalculate"}</span>
       </button>
     </div>
   );

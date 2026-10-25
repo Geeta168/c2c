@@ -49,11 +49,11 @@ export function ResultsComparison({ simulationResults }) {
         <div className="bottom-panel-title-area">
           <div className="bottom-panel-title">
             <BarChart3 size={16} style={{ color: '#00f2fe' }} />
-            <span>Decision Impact Matrix — Baseline vs. Simulated</span>
+            <span>Decision Impact Matrix — Baseline vs Plan</span>
           </div>
 
           <div className="disclaimer-pill">
-            SYNTHETIC SIMULATED ESTIMATES — NOT LIVE TRAFFIC
+            SYNTHETIC ESTIMATES — NOT LIVE TRAFFIC
           </div>
 
           <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>
@@ -242,7 +242,7 @@ export function ResultsComparison({ simulationResults }) {
                 <strong>Travel-time outlook</strong>
                 <span>min · synthetic estimates</span>
               </div>
-              <svg viewBox="0 0 380 112" role="img" aria-label="Baseline and plan travel times across the simulation timeline">
+              <svg viewBox="0 0 380 112" role="img" aria-label="Baseline and plan travel times across the traffic timeline">
                 {[24, 53, 82].map((y) => <line key={y} x1="30" y1={y} x2="350" y2={y} className="future-chart-gridline" />)}
                 {selectedPoint >= 0 && timeline[selectedPoint] && (
                   <line

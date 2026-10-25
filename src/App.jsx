@@ -14,7 +14,6 @@ import { MapView } from './components/MapView';
 import { LayerControls } from './components/LayerControls';
 import { ScenarioPanel } from './components/ScenarioPanel';
 import { AssistantChat } from './components/AssistantChat';
-import { ResultsComparison } from './components/ResultsComparison';
 import { AttributionModal } from './components/AttributionModal';
 import { runCityTwinSimulation } from './simulation/trafficSimulator';
 import { getIncidentEdgeIds } from './simulation/graphEngine';
@@ -230,6 +229,7 @@ export function App() {
           onSelectFacility={handleSelectFacility}
           mapSelectionMode={mapSelectionMode}
           onSelectMapPoint={handleSelectMapPoint}
+          onSelectMapMode={handleSetMapSelectionMode}
         />
 
         {/* Right Sidebar: Scenario Settings & AI Planning Assistant */}
@@ -275,10 +275,7 @@ export function App() {
         </aside>
       </main>
 
-      {/* 3. Bottom Panel: Baseline vs Simulated Results Comparison */}
-      <ResultsComparison simulationResults={simulationResults} />
-
-      {/* 4. Methodology & Attribution Modal */}
+      {/* 3. Methodology & Attribution Modal */}
       <AttributionModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}

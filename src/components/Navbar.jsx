@@ -29,18 +29,13 @@ export function Navbar({
           <Activity size={20} />
         </div>
         <div className="brand-text-container">
-          <div className="brand-title">CityTwin</div>
+          <div className="brand-title">TrafficTwin</div>
           <div className="brand-subtitle">Bengaluru Urban Decision Twin</div>
         </div>
       </div>
 
       {/* Center Telemetry & Preset Picker */}
       <div className="navbar-center-telemetry">
-        <div className="status-badge">
-          <span className="status-pulse-dot" />
-          <span>SIMULATION ENGINE READY</span>
-        </div>
-
         {/* Preset Selector */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <select
@@ -97,10 +92,10 @@ export function Navbar({
           className="btn-primary"
           onClick={onRunSimulation}
           disabled={isSimulating}
-          title="Recalculate network routing and BPR traffic congestion"
+          title="Recalculate routes and traffic estimates"
         >
           <Play size={14} fill="#030a1c" />
-          <span>{isSimulating ? "Simulating..." : "Run Simulation"}</span>
+          <span>{isSimulating ? "Updating..." : "Run"}</span>
         </button>
 
         <button

@@ -126,7 +126,7 @@ export function LayerControls({
               </div>
               <div>
                 <div className="layer-name">Diversion Trajectory</div>
-                <div className="layer-desc">Simulated path geometry</div>
+                <div className="layer-desc">Calculated route geometry</div>
               </div>
             </div>
             <div className={`custom-switch ${layerToggles.activeRoutes ? 'active' : ''}`}>
@@ -279,7 +279,7 @@ export function LayerControls({
             lineHeight: 1.35
           }}
         >
-          <strong>Synthetic Modeling Notice:</strong> All traffic loads and metrics are synthetic simulated estimates, not live traffic or real-world predictions.
+          <strong>Traffic estimate notice:</strong> Traffic loads and metrics use synthetic estimates, not live traffic or real-world predictions.
         </div>
       </div>
     </aside>

@@ -76,7 +76,7 @@ export const MAP_CONFIG = {
   },
 
   // Attribution string (strictly retained as required)
-  attribution: "© OpenStreetMap contributors | Tiles: OpenFreeMap | CityTwin Bengaluru Simulation Engine",
+  attribution: "© OpenStreetMap contributors | Tiles: OpenFreeMap | TrafficTwin Bengaluru Traffic Graph",
 
   // 3D Building Extrusion Layer Config using documented OpenMapTiles vector source-layer
   buildings3D: {

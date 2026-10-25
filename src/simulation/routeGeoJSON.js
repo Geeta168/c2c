@@ -27,12 +27,20 @@ function isDrawableRoute(route, closedEdgeIds, closureActive) {
 }
 
 function createRouteFeature(route, properties) {
+  const hasEdgeGeometry = route.edges?.length && route.edges.every((edge) => Array.isArray(edge.coordinates));
+  const coordinates = hasEdgeGeometry
+    ? route.edges.map((edge, index) => {
+        const followsEdgeDirection = edge.from === route.path?.[index] && edge.to === route.path?.[index + 1];
+        return followsEdgeDirection ? edge.coordinates : [...edge.coordinates].reverse();
+      })
+    : [route.coordinates];
+
   return {
     type: 'Feature',
     properties,
     geometry: {
-      type: 'LineString',
-      coordinates: route.coordinates
+      type: 'MultiLineString',
+      coordinates
     }
   };
 }

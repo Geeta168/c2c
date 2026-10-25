@@ -181,11 +181,11 @@ function generateExecutiveBriefing(parsed, results) {
 
   return {
     title: `Decision Evaluation Briefing: ${roadName} (${scenario.durationHours}h Closure)`,
-    executiveSummary: `Simulation completed deterministically for ${roadName} closure under ${scenario.demandLevel.toUpperCase()} traffic demand. ${recommendation.reason}`,
+    executiveSummary: `Calculated estimates for ${roadName} closure under ${scenario.demandLevel.toUpperCase()} traffic demand. ${recommendation.reason}`,
     keyFindings,
     recommendedStrategy: recommendation.winner.toUpperCase(),
     recommendedStrategyReason: recommendation.reason,
     mitigations,
-    syntheticDisclaimer: "Synthetic simulated estimates, not live traffic or real-world predictions. Generated via CityTwin Graph & BPR Engine."
+    syntheticDisclaimer: "Synthetic estimates, not live traffic or real-world predictions. Calculated by the TrafficTwin Graph & BPR Engine."
   };
 }

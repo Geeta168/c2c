@@ -42,7 +42,7 @@ export function AttributionModal({ isOpen, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Award size={20} style={{ color: '#00f2fe' }} />
             <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#f1f5f9' }}>
-              CityTwin Bengaluru — Architecture & Attribution
+              TrafficTwin Bengaluru — Architecture & Attribution
             </h3>
           </div>
           <button
@@ -79,7 +79,7 @@ export function AttributionModal({ isOpen, onClose }) {
           <div>
             <strong style={{ color: '#f59e0b' }}>3. Synthetic Modeling Transparency:</strong>
             <p style={{ marginTop: '4px', color: '#94a3b8' }}>
-              All baseline traffic volumes, volume-to-capacity (V/C) ratios, and simulation outputs are <em>synthetic simulated estimates</em> designed for urban scenario testing and decision-making drills, not live sensor traffic or official municipal forecasts.
+              Baseline traffic volumes, volume-to-capacity (V/C) ratios, and traffic outputs are <em>synthetic estimates</em> for urban planning exercises, not live sensor traffic or official municipal forecasts.
             </p>
           </div>
 

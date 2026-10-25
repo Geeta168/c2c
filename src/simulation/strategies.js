@@ -104,7 +104,7 @@ export function runPlanB(options) {
   // Weight function for Plan B: Non-linear BPR delay curve with heavy bottleneck penalty
   const adj = buildAdjacencyGraph(edges, {
     closedEdgeIds,
-    flowMultiplier: demandMultiplier,
+    flowMultiplier: demandMultiplier * diversionMultiplier,
     edgeWeightFn: (edge, flow) => {
       // Capacity-aware cost: roads near or exceeding capacity get exponentially penalized
       const bpr = calculateBPRTravelTime(edge, flow, 0.25, 4.0);

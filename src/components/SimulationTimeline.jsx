@@ -23,16 +23,16 @@ export function SimulationTimeline({ selectedHour, onSelectHour, closureActive, 
       : 'Road open';
 
   return (
-    <section className="simulation-timeline" aria-label="Future simulation timeline">
+    <section className="simulation-timeline" aria-label="Future traffic outlook">
       <div className="simulation-timeline-heading">
         <div>
-          <strong>Future simulation</strong>
+          <strong>Future traffic</strong>
           <span className="simulation-timeline-status">{status}</span>
         </div>
         <span className="simulation-timeline-disclaimer">Synthetic estimates</span>
       </div>
       <div className="simulation-timeline-controls">
-        <div className="simulation-time-options" role="group" aria-label="Select simulation hour">
+        <div className="simulation-time-options" role="group" aria-label="Select time horizon">
           {SIMULATION_HOURS.map((hour) => (
             <button
               key={hour}
@@ -48,7 +48,7 @@ export function SimulationTimeline({ selectedHour, onSelectHour, closureActive, 
         <button
           type="button"
           className="simulation-play-btn"
-          aria-label={isPlaying ? 'Pause future simulation' : 'Play future simulation'}
+          aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
           title={isPlaying ? 'Pause' : 'Play'}
           onClick={() => setIsPlaying((playing) => !playing)}
         >
